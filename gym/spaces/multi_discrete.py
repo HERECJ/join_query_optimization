@@ -1,4 +1,3 @@
-import gym
 import numpy as np
 from .space import Space
 
@@ -9,7 +8,7 @@ class MultiDiscrete(Space):
     - It is useful to represent game controllers or keyboards where each key can be represented as a discrete action space
     - It is parametrized by passing an array of positive integers specifying number of actions for each discrete action space
 
-    Note: A value of 0 always need to represent the NOOP action.
+    Note: Some environment wrappers assume a value of 0 always represents the NOOP action.
 
     e.g. Nintendo Game Controller
     - Can be conceptualized as 3 discrete action spaces:
@@ -24,26 +23,24 @@ class MultiDiscrete(Space):
 
     """
     def __init__(self, nvec):
-    
+
         """
         nvec: vector of counts of each categorical variable
         """
         assert (np.array(nvec) > 0).all(), 'nvec (counts) have to be positive'
-        self.nvec = np.asarray(nvec, dtype=np.uint32)
+        self.nvec = np.asarray(nvec, dtype=np.int64)
 
-        super(MultiDiscrete, self).__init__(self.nvec.shape, np.uint32)
-        self.np_random = np.random.RandomState()
-
-    def seed(self, seed):
-        self.np_random.seed(seed)
+        super(MultiDiscrete, self).__init__(self.nvec.shape, np.int64)
 
     def sample(self):
-        return (self.np_random.random_sample(self.nvec.shape) * self.nvec).astype(self.dtype)
+        return (self.np_random.random_sample(self.nvec.shape)*self.nvec).astype(self.dtype)
 
     def contains(self, x):
+        if isinstance(x, list):
+            x = np.array(x)  # Promote list to array for contains check
         # if nvec is uint32 and space dtype is uint32, then 0 <= x < self.nvec guarantees that x
         # is within correct bounds for space dtype (even though x does not have to be unsigned)
-        return (0 <= x).all() and (x < self.nvec).all()
+        return x.shape == self.shape and (0 <= x).all() and (x < self.nvec).all()
 
     def to_jsonable(self, sample_n):
         return [sample.tolist() for sample in sample_n]
@@ -55,4 +52,4 @@ class MultiDiscrete(Space):
         return "MultiDiscrete({})".format(self.nvec)
 
     def __eq__(self, other):
-        return np.all(self.nvec == other.nvec)
+        return isinstance(other, MultiDiscrete) and np.all(self.nvec == other.nvec)

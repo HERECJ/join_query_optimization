@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from gym import envs
-from gym.envs.tests.spec_list import skip_mujoco
+from gym.envs.tests.spec_list import skip_mujoco, SKIP_MUJOCO_WARNING_MESSAGE
 
 
 def verify_environments_match(old_environment_id,
@@ -26,18 +26,17 @@ def verify_environments_match(old_environment_id,
         new_observation, new_reward, new_done, new_info = new_environment.step(
             action)
 
-        np.testing.assert_allclose(old_observation, new_observation)
-        np.testing.assert_allclose(old_reward, new_reward)
-        np.testing.assert_allclose(old_done, new_done)
+        eps = 1e-6
+        np.testing.assert_allclose(old_observation, new_observation, atol=eps)
+        np.testing.assert_allclose(old_reward, new_reward, atol=eps)
+        np.testing.assert_allclose(old_done, new_done, atol=eps)
 
         for key in old_info:
-            np.testing.assert_array_equal(old_info[key], new_info[key])
+            np.testing.assert_allclose(old_info[key], new_info[key], atol=eps)
 
 
-@unittest.skipIf(skip_mujoco, 'Cannot run mujoco key ' +
-                              '(either license key not found or ' +
-                              'mujoco not installed properly')
-class Mujocov2Tov2ConverstionTest(unittest.TestCase):
+@unittest.skipIf(skip_mujoco, SKIP_MUJOCO_WARNING_MESSAGE)
+class Mujocov2Tov3ConversionTest(unittest.TestCase):
     def test_environments_match(self):
         test_cases = (
             {

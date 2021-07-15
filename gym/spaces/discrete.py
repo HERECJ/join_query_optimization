@@ -1,22 +1,19 @@
 import numpy as np
-import gym
 from .space import Space
 
 
 class Discrete(Space):
-    """
-    {0,1,...,n-1}
+    r"""A discrete space in :math:`\{ 0, 1, \\dots, n-1 \}`. 
 
-    Example usage:
-    self.observation_space = spaces.Discrete(2)
+    Example::
+
+        >>> Discrete(2)
+
     """
     def __init__(self, n):
+        assert n >= 0
         self.n = n
         super(Discrete, self).__init__((), np.int64)
-        self.np_random = np.random.RandomState()
-
-    def seed(self, seed):
-        self.np_random.seed(seed)
 
     def sample(self):
         return self.np_random.randint(self.n)
@@ -24,7 +21,7 @@ class Discrete(Space):
     def contains(self, x):
         if isinstance(x, int):
             as_int = x
-        elif isinstance(x, (np.generic, np.ndarray)) and (x.dtype.kind in np.typecodes['AllInteger'] and x.shape == ()):
+        elif isinstance(x, (np.generic, np.ndarray)) and (x.dtype.char in np.typecodes['AllInteger'] and x.shape == ()):
             as_int = int(x)
         else:
             return False
@@ -34,4 +31,4 @@ class Discrete(Space):
         return "Discrete(%d)" % self.n
 
     def __eq__(self, other):
-        return self.n == other.n
+        return isinstance(other, Discrete) and self.n == other.n
