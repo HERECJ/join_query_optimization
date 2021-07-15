@@ -31,6 +31,7 @@ OPTIMIZER_SHARED_CONFIGS = [
     "learning_starts"
 ]
 
+eval_fn = custom_eval_function
 
 SIMPLE_CONFIG = {
     # === Model ===
