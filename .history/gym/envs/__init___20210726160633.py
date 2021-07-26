@@ -45,8 +45,8 @@ for i in range(0, 4):
     register(
         id=train_env_name,
         kwargs={'file_path': train_file_name},
-        entry_point='gym.envs.database2:Train_Join_Job'
-        # entry_point='gym.envs.database2:Train_Join_Step_Reward'
+        # entry_point='gym.envs.database2:Train_Join_Job'
+        entry_point='gym.envs.database2:Train_Join_Step_Reward'
     )
 
     register(

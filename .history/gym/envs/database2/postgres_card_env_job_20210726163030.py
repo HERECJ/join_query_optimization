@@ -343,6 +343,6 @@ class Train_Join_Step_Reward(Train_Join_Job):
               #print(self.render()[0])
             costs = 0
             
-        # print("This Step Reward :", cost_row if self.is_done else len(cost_arr))
+        print("This Step Reward :", cost_row if self.is_done else len(cost_arr))
         #return self.obs, costs, self.is_done, {}
         return np.matrix(self.obs).flatten().tolist()[0], costs, self.is_done, {}

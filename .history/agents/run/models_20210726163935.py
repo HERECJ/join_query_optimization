@@ -47,6 +47,9 @@ class CustomModel(TorchModelV2):
         # print("======Finish Initialize=====")
         
     def forward(self, input_dict, state, seq_lens):
+        import pdb;
+        print("(( Model Training ))", input_dict["obs"]["db"].sum(), self.cnt_for)
+        # print("(((  Continue Model Forward  ))), ", self.cnt_for)
         self.cnt_for += 1
         action_mask = input_dict["obs"]["action_mask"]
         input_dict["obs"] = input_dict["obs"]["db"]

@@ -28,8 +28,8 @@ if __name__ == "__main__":
     # register_env("CM1-postgres-card-job-masking-v0", lambda config : CrossVal(config))
 
 
-    iteration = range(0,6)
-    cross = range(0,2)
+    iteration = range(0,1)
+    cross = range(0,1)
 
     model = "my_model"
 
@@ -47,11 +47,11 @@ if __name__ == "__main__":
                     checkpoint_at_end=True,
                     stop={
                         "timesteps_total": 200000,
-                        "training_iteration": 32,
+                        "training_iteration": 100,
                     },
                     config=dict({
                         # "log_level": "DEBUG",
-                        "num_gpus" : 1,
+                        # "num_gpus" : 1,
                         "framework": "torch",
                         "env": env_name,
                         "env_config": {

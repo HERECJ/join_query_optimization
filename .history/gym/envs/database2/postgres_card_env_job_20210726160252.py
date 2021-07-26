@@ -311,7 +311,6 @@ class Train_Join_Step_Reward(Train_Join_Job):
           for subquery in self.action_obj:
             if (type(subquery) is Relation) or (type(subquery) is Query):
               try:
-                cost_row = cm1(subquery, self.cursor)
                 costs = -1 * ((sqrt(cm1(subquery, self.cursor) - self.cost['min'])) / (
                     sqrt(self.cost['max'] - self.cost['min'])) * 10)  # sqrt SUM
               except:
@@ -327,22 +326,20 @@ class Train_Join_Step_Reward(Train_Join_Job):
             cost_arr = []
             for subquery in self.action_obj:
               if (type(subquery) is Relation) or (type(subquery) is Query):
-                print(len(cost_arr), cost_arr)
+                print(len(cost_arr))
                 try:
-                  cost_row = cm1(subquery, self.cursor)
                   costs = -1 * ((sqrt(cm1(subquery, self.cursor) - self.cost['min'])) / (
                       sqrt(self.cost['max'] - self.cost['min'])) * 10)  # sqrt SUM
                 except:
-                  # print("costs: " + str(cm1(subquery, self.cursor)))
-                  cost_row = cm1(subquery, self.cursor)
+                  print("costs: " + str(cm1(subquery, self.cursor)))
                   costs = 0
                   pass
                 if costs < -10.:
                     costs = -10.
-                cost_arr.append(cost_row)
+                cost_arr.append(costs)
               #print(self.render()[0])
             costs = 0
             
-        # print("This Step Reward :", cost_row if self.is_done else len(cost_arr))
+
         #return self.obs, costs, self.is_done, {}
         return np.matrix(self.obs).flatten().tolist()[0], costs, self.is_done, {}
