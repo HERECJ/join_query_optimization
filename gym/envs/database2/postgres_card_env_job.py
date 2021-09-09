@@ -7,6 +7,7 @@ import numpy as np
 import random
 import psycopg2
 from itertools import permutations
+
 from queryoptimization.QueryGraph import Query, Relation, Query_Init, EmptyQuery, getJoinConditions
 from queryoptimization.cm1_postgres_card import cm1
 from math import sqrt
@@ -256,6 +257,7 @@ class Evaluate_Join_Job(Train_Join_Job):
         self.query = Query_Init(sql, self.schema, self.primary)
         self.is_done = False
         self.action_obj = self.query.actions
+        import pdb; pdb.set_trace()
         self.action_list = list(permutations(
             range(0, len(self.query.actions)), 2))
         self.actions = list(range(0, len(self.action_list)))
@@ -324,10 +326,10 @@ class Train_Join_Step_Reward(Train_Join_Job):
           self.is_done = True
         
         else:
+            import pdb; pdb.set_trace()
             cost_arr = []
             for subquery in self.action_obj:
-              if (type(subquery) is Relation) or (type(subquery) is Query):
-                print(len(cost_arr), cost_arr)
+              if (type(subquery) is Query):
                 try:
                   cost_row = cm1(subquery, self.cursor)
                   costs = -1 * ((sqrt(cm1(subquery, self.cursor) - self.cost['min'])) / (
@@ -340,7 +342,76 @@ class Train_Join_Step_Reward(Train_Join_Job):
                 if costs < -10.:
                     costs = -10.
                 cost_arr.append(cost_row)
+                print(len(cost_arr), cost_arr)
               #print(self.render()[0])
+            costs = 0
+            
+        # print("This Step Reward :", cost_row if self.is_done else len(cost_arr))
+        #return self.obs, costs, self.is_done, {}
+        return np.matrix(self.obs).flatten().tolist()[0], costs, self.is_done, {}
+
+
+
+class Train_Join_Step_Tree_Struct(Train_Join_Job):
+    def __init__(self, file_path):
+        super().__init__(file_path=file_path)
+
+    def step(self, action_num):
+        action = self.action_list[action_num]
+        action_num_l = action[0]
+        action_num_r = action[1]
+        if (type(self.action_obj[action_num_l]) is not EmptyQuery) and (type(self.action_obj[action_num_r]) is not EmptyQuery):
+          new_action_space = []
+
+          for subquery in self.action_obj:
+            if subquery is self.action_obj[action_num_l]:
+              new_action_space.append(
+                  Query(self.action_obj[action_num_l], self.action_obj[action_num_r]))
+            elif subquery not in (self.action_obj[action_num_l], self.action_obj[action_num_r]):
+              new_action_space.append(subquery)
+            else:
+              new_action_space.append(EmptyQuery(
+                  list(np.zeros(len(self.obs[0]), dtype=int))))
+          self.action_obj = new_action_space
+
+          costs = 0
+          done_counter = 0
+          for subquery in self.action_obj:
+            if not((type(subquery) is Relation) or (type(subquery) is Query)):
+              done_counter += 1
+        else:
+          costs = 0
+          done_counter = 0
+
+        self.obs = []
+        for obj in self.action_obj:
+          self.obs.append(obj.mask)
+
+        if done_counter is len(self.action_obj)-1:
+
+          #costs = []
+          for subquery in self.action_obj:
+            if (type(subquery) is Relation) or (type(subquery) is Query):
+              try:
+                cost_row = cm1(subquery, self.cursor)
+                costs = -1 * ((sqrt(cm1(subquery, self.cursor) - self.cost['min'])) / (
+                    sqrt(self.cost['max'] - self.cost['min'])) * 10)  # sqrt SUM
+              except:
+                print("costs: " + str(cm1(subquery, self.cursor)))
+                costs = 0
+                pass
+              if costs < -10.:
+                  costs = -10.
+              #print(self.render()[0])
+          self.is_done = True
+        
+        else:
+            sub_trees = []
+            for subquery in self.action_obj:
+              if (type(subquery) is Query):
+                tmp_tree = subquery.to_tree_structure()
+                sub_trees.append(tmp_tree)
+            print(len(sub_trees))
             costs = 0
             
         # print("This Step Reward :", cost_row if self.is_done else len(cost_arr))

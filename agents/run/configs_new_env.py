@@ -140,13 +140,13 @@ SIMPLE_CONFIG = {
     # Size of a batched sampled from replay buffer for training. Note that
     # if async_updates is set, then each worker returns gradients for a
     # batch of this size.
-    "train_batch_size": 32,
+    "train_batch_size": 1,
 
     # === Parallelism ===
     # Number of workers for collecting samples with. This only makes sense
     # to increase if your environment is particularly slow to sample, or if
     # you"re using the Async or Ape-X optimizers.
-    "num_workers": 4,
+    "num_workers": 1,
     # Optimizer class to use.
     # "optimizer_class": "SyncReplayOptimizer",
     # Whether to use a distribution of epsilons across workers for exploration.
